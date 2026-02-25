@@ -128,8 +128,18 @@ int main() {
 
 <script>
 // Browser lexer (same logic as your Python lexer, translated to JS)
-const KEYWORDS = new Set(["auto","break","case","char","const","continue","default","do","double","else","enum","extern","float","for","goto","if","int","long","register","return","short","signed","sizeof","static","struct","switch","typedef","union","unsigned","void","volatile","while","print","input","def","class","import","from","as","try","except","finally","raise","with","yield","lambda","pass","True","False","None","and","or","not","in","is","elif"]);
-const MULTI_OPS = new Set(["==","!=","<=",">=","&&","||","++","--","+=","-=","*=","/=","<<",">>","->","**","//"]);
+const KEYWORDS = new Set([
+  "auto","break","case","char","const","continue","default","do","double","else",
+  "enum","extern","float","for","goto","if","int","long","register","return","short",
+  "signed","sizeof","static","struct","switch","typedef","union","unsigned","void",
+  "volatile","while","print","input","def","class","import","from","as","try","except",
+  "finally","raise","with","yield","lambda","pass","True","False","None","and","or","not",
+  "in","is","elif"
+]);
+const MULTI_OPS = new Set([
+  "==","!=","<=",">=","&&","||","++","--","+=","-=","*=","/=",
+  "<<",">>","->","**","//"
+]);
 const SINGLE_OPS = new Set([..."+-*/%=<>!&|^~?:@"]);
 const DELIMITERS = new Set([..."(){}[];,."]);
 
@@ -138,25 +148,25 @@ function tokenize(source){
   let pos=0,line=1,col=1;
   const cur = ()=> pos<source.length ? source[pos] : null;
   const peek = ()=> pos+1<source.length ? source[pos+1] : null;
-  const adv = ()=> { if(source[pos]==='\\n'){ line++; col=1 } else col++; pos++; };
+  const adv = ()=> { if(source[pos]==='\n'){ line++; col=1 } else col++; pos++; };
   const add = (type,value,l,c)=> tokens.push({type,value,line:l,column:c});
 
   while(pos < source.length){
     // skip spaces/tabs/cr
-    while(cur()!==null && (cur()===' '||cur()==='\\t'||cur()==='\\r')) adv();
+    while(cur()!==null && (cur()===' '||cur()==='\t'||cur()==='\r')) adv();
     const ch = cur(); if(ch===null) break;
 
-    if(ch==='\\n'){ adv(); continue; }
+    if(ch==='\n'){ adv(); continue; }
 
     if(ch==='#'){
       const sl=line, sc=col; let d='';
-      while(cur()!==null && cur()!=='\\n'){ d+=cur(); adv(); }
+      while(cur()!==null && cur()!== '\n'){ d+=cur(); adv(); }
       add('PREPROCESSOR', d, sl, sc); continue;
     }
 
     if(ch==='/' && peek()==='/'){
       const sl=line, sc=col; let cmt='';
-      while(cur()!==null && cur()!=='\\n'){ cmt+=cur(); adv(); }
+      while(cur()!==null && cur()!== '\n'){ cmt+=cur(); adv(); }
       add('COMMENT', cmt, sl, sc); continue;
     }
     if(ch==='/' && peek()==='*'){
